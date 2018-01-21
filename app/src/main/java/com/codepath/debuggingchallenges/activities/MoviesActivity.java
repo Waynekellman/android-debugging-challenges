@@ -2,6 +2,7 @@ package com.codepath.debuggingchallenges.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.ListView;
 
 import com.codepath.debuggingchallenges.R;
@@ -32,18 +33,13 @@ public class MoviesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_movies);
         lvMovies = (ListView) findViewById(R.id.lvMovies);
 
-        // Create the adapter to convert the array to views
-        MoviesAdapter adapter = new MoviesAdapter(this, movies);
-
-        // Attach the adapter to a ListView
-        lvMovies.setAdapter(adapter);
 
         fetchMovies();
     }
 
 
     private void fetchMovies() {
-        String url = " https://api.themoviedb.org/3/movie/now_playing?api_key=";
+        String url = " https://api.themoviedb.org/3/movie/now_playing?api_key=" + API_KEY;
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(url, null, new JsonHttpResponseHandler() {
             @Override
@@ -51,9 +47,22 @@ public class MoviesActivity extends AppCompatActivity {
                 try {
                     JSONArray moviesJson = response.getJSONArray("results");
                     movies = Movie.fromJSONArray(moviesJson);
+                    // Create the adapter to convert the array to views
+                    adapter = new MoviesAdapter(MoviesActivity.this, movies);
+
+
+                    // Attach the adapter to a ListView
+                    lvMovies.setAdapter(adapter);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+                throwable.printStackTrace();
             }
         });
     }
